@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wilmott QF 01 &mdash; Products and Markets</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0a; --bg-card: #0d1117; --bg-code: #161b22;
+            --text-primary: #e6edf3; --text-secondary: #8b949e;
+            --accent: #fbbf24; --accent-dim: #fbbf2444; --accent-glow: #fbbf2433;
+            --accent-2: #f472b6; --accent-3: #a78bfa; --accent-4: #34d399;
+            --accent-5: #60a5fa;
+            --border: #21262d;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+            --font-body: 'Inter', sans-serif;
+            --max-width: 900px;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { background: var(--bg-primary); color: var(--text-primary); font-family: var(--font-body); font-size: 17px; line-height: 1.7; overflow-x: hidden; }
+        .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem 1.5rem; text-align: center; position: relative; }
+        .hero::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 700px; height: 600px; background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%); pointer-events: none; z-index: 0; }
+        .hero > * { position: relative; z-index: 1; }
+        .series-label { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1rem; }
+        .hero h1 { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 700; color: var(--text-primary); line-height: 1.2; margin-bottom: 1rem; }
+        .hero h1 .accent { color: var(--accent); }
+        .hero .subtitle { font-size: 1.1rem; color: var(--text-secondary); max-width: 640px; margin-bottom: 2rem; }
+        .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-bottom: 2.5rem; }
+        .tag { font-family: var(--font-mono); font-size: 0.75rem; padding: 0.25rem 0.75rem; border-radius: 999px; border: 1px solid var(--accent); color: var(--accent); background: var(--accent-dim); white-space: nowrap; }
+        .pipeline { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.25rem; margin-bottom: 1rem; max-width: var(--max-width); }
+        .pipeline-step { font-family: var(--font-mono); font-size: 0.7rem; padding: 0.3rem 0.7rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; color: var(--text-secondary); white-space: nowrap; }
+        .pipeline-arrow { color: var(--accent); font-size: 0.9rem; font-weight: 700; }
+        .slide { min-height: 100vh; max-width: var(--max-width); margin: 0 auto; padding: 4rem 1.5rem; position: relative; display: flex; flex-direction: column; justify-content: center; }
+        .slide-number { font-family: var(--font-display); font-size: 5rem; font-weight: 700; color: var(--accent-dim); position: absolute; top: 2rem; right: 1.5rem; line-height: 1; user-select: none; }
+        .slide h2 { font-family: var(--font-display); font-size: 1.9rem; font-weight: 700; color: var(--accent); margin-bottom: 1.5rem; line-height: 1.25; }
+        .slide h3 { font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; color: var(--text-primary); margin-top: 1.5rem; margin-bottom: 0.75rem; }
+        .slide p { margin-bottom: 1rem; color: var(--text-secondary); }
+        .slide p strong { color: var(--text-primary); }
+        .slide ul, .slide ol { margin-bottom: 1rem; padding-left: 1.5rem; color: var(--text-secondary); }
+        .slide li { margin-bottom: 0.4rem; }
+        .slide li strong { color: var(--text-primary); }
+        .slide code { background: var(--bg-code); padding: 0.1rem 0.35rem; border-radius: 3px; font-family: var(--font-mono); font-size: 0.85em; color: var(--accent); }
+        .diagram-grid { display: grid; gap: 0.75rem; margin: 1.5rem 0; padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; }
+        .diagram-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+        .diagram-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+        .diagram-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+        .diagram-panel { padding: 1rem; background: var(--bg-code); border: 1px solid var(--border); border-radius: 6px; }
+        .diagram-panel.accent-border { border-left: 3px solid var(--accent); }
+        .diagram-panel.r { border-left: 3px solid var(--accent-2); }
+        .diagram-panel.p { border-left: 3px solid var(--accent-3); }
+        .diagram-panel.g { border-left: 3px solid var(--accent-4); }
+        .diagram-panel.b { border-left: 3px solid var(--accent-5); }
+        .diagram-panel h4 { font-family: var(--font-display); font-size: 1rem; color: var(--accent); margin-bottom: 0.5rem; }
+        .diagram-panel.r h4 { color: var(--accent-2); }
+        .diagram-panel.p h4 { color: var(--accent-3); }
+        .diagram-panel.g h4 { color: var(--accent-4); }
+        .diagram-panel.b h4 { color: var(--accent-5); }
+        .diagram-panel p, .diagram-panel ul { font-size: 0.9rem; }
+        .callout { background: var(--bg-card); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 1rem 1.25rem; margin: 1.25rem 0; }
+        .callout p { margin-bottom: 0; }
+        .callout .callout-label { font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.3rem; }
+        .quote { font-family: var(--font-display); font-size: 1.1rem; font-style: italic; color: var(--text-primary); padding: 1rem 1.5rem; border-left: 3px solid var(--accent); background: var(--bg-card); margin: 1.25rem 0; border-radius: 0 8px 8px 0; }
+        .quote .attr { display: block; margin-top: 0.5rem; font-style: normal; font-size: 0.85rem; color: var(--text-secondary); font-family: var(--font-mono); }
+        .canvas-wrap { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin: 1.25rem 0; overflow-x: auto; }
+        .canvas-wrap canvas, .canvas-wrap svg { display: block; margin: 0 auto; max-width: 100%; }
+        .control-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; margin: 1.25rem 0; }
+        .control-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .control-row label { font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-secondary); min-width: 160px; }
+        .control-row input[type="range"] { flex: 1; min-width: 150px; accent-color: var(--accent); }
+        .control-row select, .control-row input[type="number"] { background: var(--bg-code); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; padding: 0.3rem 0.5rem; font-family: var(--font-mono); font-size: 0.8rem; }
+        .control-row .val { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); min-width: 80px; text-align: right; }
+        .btn { font-family: var(--font-mono); font-size: 0.8rem; padding: 0.4rem 0.9rem; background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; cursor: pointer; transition: background 0.15s ease; }
+        .btn:hover { background: rgba(251,191,36,0.25); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn.secondary { background: var(--bg-code); color: var(--text-secondary); border-color: var(--border); }
+        .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem; margin-top: 0.75rem; }
+        .metric { background: var(--bg-code); border: 1px solid var(--border); border-radius: 6px; padding: 0.6rem 0.8rem; text-align: center; }
+        .metric .metric-label { font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.08em; }
+        .metric .metric-value { font-family: var(--font-display); font-size: 1.25rem; color: var(--accent); font-weight: 600; margin-top: 0.2rem; }
+        .contents-list { list-style: none; padding-left: 0; counter-reset: contents; }
+        .contents-list li { counter-increment: contents; padding: 0.6rem 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+        .contents-list li:last-child { border-bottom: none; }
+        .contents-list li::before { content: counter(contents, decimal-leading-zero); font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); min-width: 2rem; }
+        .contents-list a { color: var(--text-primary); text-decoration: none; }
+        .contents-list a:hover { color: var(--accent); }
+        .footer { text-align: center; padding: 3rem 1.5rem; color: var(--text-secondary); font-size: 0.85rem; border-top: 1px solid var(--border); max-width: var(--max-width); margin: 0 auto; }
+        .footer a { color: var(--accent); text-decoration: none; }
+        .katex { color: var(--text-primary); }
+        .katex-display { margin: 1rem 0; overflow-x: auto; overflow-y: hidden; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 1rem 0; }
+        th { background: var(--bg-code); color: var(--accent); font-weight: 600; text-align: left; padding: 0.6rem 0.85rem; border-bottom: 1px solid var(--border); font-family: var(--font-display); }
+        td { padding: 0.5rem 0.85rem; border-bottom: 1px solid var(--border); color: var(--text-secondary); vertical-align: top; }
+        tr:last-child td { border-bottom: none; }
+        tr:nth-child(even) td { background: rgba(13, 17, 23, 0.5); }
+        @media (max-width: 640px) {
+            .slide { padding: 3rem 1rem; min-height: auto; }
+            .slide-number { font-size: 3rem; top: 1.5rem; right: 1rem; }
+            .slide h2 { font-size: 1.5rem; }
+            .diagram-grid.cols-2, .diagram-grid.cols-3, .diagram-grid.cols-4 { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="series-label">Paul Wilmott Introduces Quantitative Finance &mdash; Deck 01</div>
+    <h1>Products and <span class="accent">Markets</span></h1>
+    <p class="subtitle">Equities, commodities, currencies, indices &mdash; the underlying assets &mdash; together with forwards, futures and the no-arbitrage glue that ties them together.</p>
+
+    <div class="tags">
+        <span class="tag">equities</span><span class="tag">commodities</span>
+        <span class="tag">FX</span><span class="tag">indices</span>
+        <span class="tag">forwards</span><span class="tag">futures</span>
+        <span class="tag">time value</span><span class="tag">no arbitrage</span>
+    </div>
+
+    <div class="pipeline">
+        <span class="pipeline-step">underlying $S$</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">risk-free rate $r$</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">forward $F$</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">no-arbitrage</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">all derivatives</span>
+    </div>
+</header>
+
+<section class="slide" id="slide-00">
+    <div class="slide-number">00</div>
+    <h2>Topics We'll Cover</h2>
+    <ul class="contents-list">
+        <li><a href="#slide-01">What this book is &mdash; and isn't</a></li>
+        <li><a href="#slide-02">Equities: ownership, dividends, splits</a></li>
+        <li><a href="#slide-03">Commodities, currencies, indices</a></li>
+        <li><a href="#slide-04">The time value of money</a></li>
+        <li><a href="#slide-05">Fixed-income basics</a></li>
+        <li><a href="#slide-06">Forwards and futures</a></li>
+        <li><a href="#slide-07">A first taste of no-arbitrage</a></li>
+        <li><a href="#slide-08">Interactive: forward-pricing calculator</a></li>
+        <li><a href="#slide-09">Commodity, FX and index futures</a></li>
+        <li><a href="#slide-10">Where this lands in the rest of the book</a></li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-01">
+    <div class="slide-number">01</div>
+    <h2>What This Book Is &mdash; and Isn't</h2>
+    <p>Wilmott opens the book by stating its scope sharply: it is about <strong>derivative pricing</strong>, the mathematics behind contracts whose value depends on something else &mdash; a stock, a currency, an interest rate, an electricity price.</p>
+
+    <div class="quote">
+        <p>"Quantitative finance is the application of mathematical methods to the modelling of financial markets and to the valuation of derivative securities."</p>
+        <span class="attr">&mdash; Wilmott, Ch. 1</span>
+    </div>
+
+    <p>Chapter 1 doesn't yet do any of that. It introduces <em>the things derivatives are written on</em> &mdash; the equities, commodities, currencies and indices that play the role of the underlying &mdash; and the one piece of arithmetic the rest of the book never lives without: the time value of money. By the end of the chapter you'll already have seen the first genuine result of quantitative finance: the no-arbitrage forward price.</p>
+
+    <div class="callout">
+        <div class="callout-label">Companion philosophy</div>
+        <p>This deck stays close to Wilmott's section numbering. The interactive forward-pricing calculator on slide 08 is the same example the book uses to motivate no-arbitrage; it's a knob you can turn rather than a numerical worked example.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-02">
+    <div class="slide-number">02</div>
+    <h2>Equities: Ownership, Dividends, Splits</h2>
+    <p>An <strong>equity</strong> is a share of ownership in a company. The owner has two sources of return &mdash; capital appreciation (if the price rises) and dividends (if the company pays them).</p>
+
+    <div class="diagram-grid cols-2">
+        <div class="diagram-panel accent-border">
+            <h4>Dividends</h4>
+            <p>A scheduled cash payment per share. When the dividend is paid, the share's value drops by approximately the cash amount &mdash; the company has paid out cash and is worth less by that amount.</p>
+            <p>If a stock at $S$ pays a known dividend $D$:</p>
+            <p>$$S^+ = S^- - D \quad \text{at the ex-dividend date.}$$</p>
+        </div>
+        <div class="diagram-panel g">
+            <h4>Stock splits</h4>
+            <p>An $n$-for-$1$ split multiplies the share count by $n$ and divides each share price by $n$. The market cap is unchanged; the only purpose is to keep the share price in a "tradable" range.</p>
+            <p>$$S \to S/n, \quad N \to nN.$$</p>
+        </div>
+    </div>
+
+    <p>Both dividends and splits are <em>known</em> events at known times &mdash; the modelling problem is the share price itself, which is not. That is the subject of Chapters 4 and 5.</p>
+
+    <div class="callout">
+        <div class="callout-label">Notation we'll keep</div>
+        <p>$S$ &mdash; spot price of the underlying. $S_t$ &mdash; spot at time $t$. $r$ &mdash; the continuously compounded risk-free interest rate. $D$ &mdash; a dividend (cash or, eventually, a yield). $T$ &mdash; maturity. The book uses these consistently, and so will every deck in this series.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-03">
+    <div class="slide-number">03</div>
+    <h2>Commodities, Currencies, Indices</h2>
+    <p>Three more underlyings round out the set Wilmott treats:</p>
+
+    <div class="diagram-grid cols-3">
+        <div class="diagram-panel p">
+            <h4>Commodities</h4>
+            <p>Oil, gold, copper, wheat. Unlike an equity they often <em>cost</em> to hold &mdash; storage, insurance &mdash; and sometimes pay a <strong>convenience yield</strong> for being available physically. Both effects later show up in the forward price.</p>
+        </div>
+        <div class="diagram-panel b">
+            <h4>Currencies (FX)</h4>
+            <p>A foreign currency at exchange rate $S$ earns the foreign risk-free rate $r_f$. Holding GBP at home rate $r$ vs. holding USD that earns $r_f$ is the seed of <em>covered interest parity</em>.</p>
+        </div>
+        <div class="diagram-panel r">
+            <h4>Indices</h4>
+            <p>An index (S&amp;P 500, FTSE 100) is a weighted basket of stocks. It pays a stream of dividends and is conveniently modelled as paying a continuous dividend yield $q$ &mdash; the index analogue of $r_f$.</p>
+        </div>
+    </div>
+
+    <p>Wilmott's important observation: <em>all four</em> &mdash; stocks-with-yield, commodities-with-carry, foreign currencies, indices &mdash; behave like one another for pricing purposes. The carry, the foreign rate, and the dividend yield all play the role of "income from holding the asset," and the forward formula has one shape that accommodates all of them.</p>
+</section>
+
+<section class="slide" id="slide-04">
+    <div class="slide-number">04</div>
+    <h2>The Time Value of Money</h2>
+    <p>A pound today is worth more than a pound in a year because you can put today's pound in a riskless bank account and have more than a pound by next year. This trivial observation is the engine of everything that follows.</p>
+
+    <h3>Compounding conventions</h3>
+    <p>Three flavours of the same idea:</p>
+    <table>
+        <thead><tr><th>Compounding</th><th>Value of &pound;1 after time $T$ at rate $r$</th></tr></thead>
+        <tbody>
+            <tr><td>simple</td><td>$1 + rT$</td></tr>
+            <tr><td>discrete, $m$ times per year</td><td>$\left(1 + r/m\right)^{mT}$</td></tr>
+            <tr><td>continuous</td><td>$e^{rT}$</td></tr>
+        </tbody>
+    </table>
+
+    <p>The book uses <strong>continuous compounding</strong> exclusively from Chapter 4 onward, because the resulting algebra is much cleaner &mdash; $e^{rT}$ is multiplicative across time, $\log$ is linear, and the SDE for the share price (later) has $r$ sitting next to $\mu$ in a simple drift term.</p>
+
+    <h3>Discount factor</h3>
+    <p>The <strong>present value</strong> of a cashflow $C$ to be received at time $T$ is</p>
+    <p>$$\mathrm{PV}(C) = C\, e^{-rT}.$$</p>
+
+    <div class="callout">
+        <div class="callout-label">Why continuous compounding</div>
+        <p>If you're rolling daily, weekly, or monthly the discrete formula is exactly right; but the cleanest description of a portfolio that is being rebalanced <em>at every instant</em> &mdash; which is what Black&ndash;Scholes hedging assumes &mdash; is the $e^{rt}$ growth factor. From now on, $r$ means the continuously compounded rate unless otherwise stated.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-05">
+    <div class="slide-number">05</div>
+    <h2>Fixed-income Basics</h2>
+    <p>A bond is a contract that pays a stream of known cashflows at known dates. The simplest is the <strong>zero-coupon bond</strong>: a single payment of &pound;1 at maturity $T$. Its price today is</p>
+    <p>$$Z(t, T) = e^{-r(T-t)}.$$</p>
+
+    <p>That's just the discount factor of the previous slide written as a tradable instrument. A general bond is then a sum of zeros:</p>
+    <p>$$B = \sum_i C_i\, e^{-r\, t_i}.$$</p>
+
+    <h3>Inflation-proof bonds</h3>
+    <p>"Real" bonds (TIPS in the US, index-linked gilts in the UK) pay coupons indexed to a price index; their cashflows track inflation, so the discount rate that matters for them is the <em>real</em> rate, not the nominal.</p>
+
+    <div class="callout">
+        <div class="callout-label">A glimpse forward</div>
+        <p>Decks 11 and 12 take the rate $r$ apart. In this chapter, $r$ is a single number; in fixed income, it depends on the maturity ($r(T)$, the yield curve) and eventually on time and chance ($r_t$, a stochastic process). The basic discounting picture survives unchanged.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-06">
+    <div class="slide-number">06</div>
+    <h2>Forwards and Futures</h2>
+    <p>The next two contracts are the simplest derivatives in existence and they don't even need a model.</p>
+
+    <div class="diagram-grid cols-2">
+        <div class="diagram-panel accent-border">
+            <h4>Forward contract</h4>
+            <p>An agreement struck today to buy (or sell) an asset $S$ at a fixed price $F$ on a future date $T$. <em>No money changes hands today.</em></p>
+            <p>At maturity the long pays $F$, receives the asset:</p>
+            <p>$$\text{payoff to long at }T = S_T - F.$$</p>
+        </div>
+        <div class="diagram-panel b">
+            <h4>Futures contract</h4>
+            <p>An exchange-traded, margined, daily-settled version of the same thing. Economically equivalent when interest rates are non-random (Wilmott proves this in &sect;6.15).</p>
+            <p>Standardised contract sizes, central clearing, daily mark-to-market.</p>
+        </div>
+    </div>
+
+    <p>The famous question is: <strong>what is the fair value of $F$?</strong> The answer requires no probability, no stochastic process, no random walk. It requires only the principle of <em>no arbitrage</em>.</p>
+</section>
+
+<section class="slide" id="slide-07">
+    <div class="slide-number">07</div>
+    <h2>A First Taste of No-arbitrage</h2>
+    <p>Consider two ways to own one share of $S$ at time $T$:</p>
+
+    <div class="diagram-grid cols-2">
+        <div class="diagram-panel g">
+            <h4>Strategy A: buy now</h4>
+            <p>Borrow $S_0$ at rate $r$, buy the share today, hold it until $T$.</p>
+            <ul>
+                <li>$t=0$: net cashflow $0$, hold one share, owe $S_0$.</li>
+                <li>$t=T$: own one share worth $S_T$, owe $S_0 e^{rT}$.</li>
+            </ul>
+            <p>Net position: $S_T - S_0 e^{rT}$.</p>
+        </div>
+        <div class="diagram-panel p">
+            <h4>Strategy B: enter a forward</h4>
+            <p>Sign a forward to buy at $F$ on date $T$. Put nothing in today.</p>
+            <ul>
+                <li>$t=0$: net cashflow $0$, no position.</li>
+                <li>$t=T$: pay $F$, receive a share worth $S_T$.</li>
+            </ul>
+            <p>Net position: $S_T - F$.</p>
+        </div>
+    </div>
+
+    <p>Both strategies cost zero today and deliver the same asset at $T$. If the no-arbitrage principle is to hold &mdash; if you can't make a riskless profit out of two equivalent positions &mdash; the two payoffs must agree:</p>
+
+    <p>$$\boxed{\;F = S_0\, e^{rT}\;}$$</p>
+
+    <p>When the asset pays a continuous yield $q$ (foreign currency interest, index dividend yield, commodity convenience) the cost-of-carry argument generalises in the obvious way:</p>
+
+    <p>$$F = S_0\, e^{(r-q)T}.$$</p>
+
+    <div class="callout">
+        <div class="callout-label">What you just did</div>
+        <p>Priced a derivative without writing down a single probability. This is the spirit of the rest of the book: derivative prices are pinned down not by what you <em>think</em> the market will do, but by what would happen to anyone foolish enough to offer a price that allowed a free lunch.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-08">
+    <div class="slide-number">08</div>
+    <h2>Interactive: Forward-pricing Calculator</h2>
+    <p>Slide the spot, the rate, the yield and the maturity. The forward price $F = S_0\,e^{(r-q)T}$ updates live. The bar at the bottom shows the arbitrage profit if the market posts a quote $F^*$ different from the fair value.</p>
+
+    <div class="canvas-wrap">
+        <canvas id="fwd-canvas" width="780" height="280"></canvas>
+    </div>
+
+    <div class="control-panel">
+        <div class="control-row">
+            <label for="s-slider">Spot $S_0$</label>
+            <input type="range" id="s-slider" min="10" max="200" step="1" value="100">
+            <span class="val" id="s-val">100.00</span>
+        </div>
+        <div class="control-row">
+            <label for="r-slider">Risk-free rate $r$ (%)</label>
+            <input type="range" id="r-slider" min="0" max="10" step="0.05" value="4">
+            <span class="val" id="r-val">4.00%</span>
+        </div>
+        <div class="control-row">
+            <label for="q-slider">Yield $q$ (%)</label>
+            <input type="range" id="q-slider" min="0" max="10" step="0.05" value="1">
+            <span class="val" id="q-val">1.00%</span>
+        </div>
+        <div class="control-row">
+            <label for="t-slider">Maturity $T$ (years)</label>
+            <input type="range" id="t-slider" min="0.05" max="5" step="0.05" value="1">
+            <span class="val" id="t-val">1.00</span>
+        </div>
+        <div class="control-row">
+            <label for="fstar-slider">Market quote $F^*$</label>
+            <input type="range" id="fstar-slider" min="50" max="250" step="0.1" value="103">
+            <span class="val" id="fstar-val">103.00</span>
+        </div>
+        <div class="metric-grid">
+            <div class="metric"><div class="metric-label">Fair forward $F$</div><div class="metric-value" id="m-F">&mdash;</div></div>
+            <div class="metric"><div class="metric-label">Mispricing $F^*-F$</div><div class="metric-value" id="m-mis">&mdash;</div></div>
+            <div class="metric"><div class="metric-label">Arb profit at $T$</div><div class="metric-value" id="m-arb">&mdash;</div></div>
+            <div class="metric"><div class="metric-label">Arb PV today</div><div class="metric-value" id="m-pv">&mdash;</div></div>
+        </div>
+    </div>
+
+    <p>If $F^* > F$ <em>sell</em> the forward, borrow $S_0 e^{-qT}$ to buy the spot (and reinvest the yield); locked-in profit at $T$ is $F^* - F$. If $F^* < F$ run the trade in reverse. The chart shows the two payoff legs and their net &mdash; flat, risk-free, and non-zero whenever the market quote is wrong.</p>
+</section>
+
+<section class="slide" id="slide-09">
+    <div class="slide-number">09</div>
+    <h2>Commodity, FX and Index Futures</h2>
+    <p>The same formula in three different costumes:</p>
+
+    <table>
+        <thead><tr><th>Underlying</th><th>"Yield" $q$</th><th>Forward price</th></tr></thead>
+        <tbody>
+            <tr><td>Non-dividend stock</td><td>$0$</td><td>$F = S_0\, e^{rT}$</td></tr>
+            <tr><td>Dividend-paying stock / index</td><td>continuous yield $q$</td><td>$F = S_0\, e^{(r-q)T}$</td></tr>
+            <tr><td>Foreign currency</td><td>foreign rate $r_f$</td><td>$F = S_0\, e^{(r-r_f)T}$</td></tr>
+            <tr><td>Storable commodity</td><td>$-u$ &nbsp;($u$ = storage cost)</td><td>$F = S_0\, e^{(r+u)T}$</td></tr>
+            <tr><td>Consumption commodity</td><td>convenience yield $y$</td><td>$F \le S_0\, e^{(r-y)T}$</td></tr>
+        </tbody>
+    </table>
+
+    <p>For consumption commodities, the no-arbitrage argument is one-sided &mdash; you can't easily short physical wheat &mdash; so the formula becomes an inequality. The same single relation thus covers Chapters 1's worth of products on three different exchanges.</p>
+
+    <div class="callout">
+        <div class="callout-label">Futures vs. forwards (preview of &sect;6.15)</div>
+        <p>Futures are <em>daily settled</em>: the contract is repriced and cash flows between the counterparties each evening. If interest rates are deterministic this washes out exactly and the futures price equals the forward price. When rates are stochastic (Deck 12) a small <strong>convexity adjustment</strong> appears.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-10">
+    <div class="slide-number">10</div>
+    <h2>Where This Lands in the Rest of the Book</h2>
+    <p>Chapter 1 hands the next chapters three things:</p>
+
+    <div class="diagram-grid cols-3">
+        <div class="diagram-panel g">
+            <h4>1. The instruments</h4>
+            <p>Equities, FX, commodities, indices, bonds &mdash; the universe of underlyings on which everything else is written.</p>
+        </div>
+        <div class="diagram-panel p">
+            <h4>2. Discounting</h4>
+            <p>Continuous compounding and the discount factor $e^{-rT}$. Every present-value calculation in the book starts here.</p>
+        </div>
+        <div class="diagram-panel r">
+            <h4>3. No-arbitrage</h4>
+            <p>The principle that two strategies with the same payoff must have the same price. Black&ndash;Scholes (Deck 06) is this idea, applied at every instant.</p>
+        </div>
+    </div>
+
+    <h3>What's next</h3>
+    <ul>
+        <li><strong>Deck 02 &mdash;</strong> Options. Calls, puts, payoff diagrams, the strategies you build by combining them, and put&ndash;call parity (another no-arbitrage identity).</li>
+        <li><strong>Deck 03 &mdash;</strong> The binomial model. The first <em>model</em> in the book &mdash; a discrete random walk for the share price &mdash; and the option pricing that comes out of it.</li>
+        <li><strong>Deck 04 &mdash;</strong> The continuous-time random walk (geometric Brownian motion), the workhorse for everything that follows.</li>
+    </ul>
+
+    <div class="callout">
+        <div class="callout-label">Cheat sheet</div>
+        <p><strong>Discount factor:</strong> $e^{-rT}$. <strong>Forward price:</strong> $F = S_0\, e^{(r-q)T}$. <strong>No-arbitrage:</strong> if two portfolios have the same payoff at $T$, they have the same price now. <strong>Convention:</strong> $r$ is continuously compounded.</p>
+    </div>
+</section>
+
+<footer class="footer">
+    <p>Deck 01 of the <a href="https://github.com/BrendanJamesLynskey/Wilmott_QF_Hub">Paul Wilmott Introduces Quantitative Finance &mdash; Companion Series</a>.</p>
+    <p style="margin-top: 0.6rem;">Companion to chapter 1 of <em>Paul Wilmott Introduces Quantitative Finance</em>, 2nd edition (Wiley, 2007).</p>
+</footer>
+
+<script>
+(function() {
+    const $ = id => document.getElementById(id);
+    const sS = $('s-slider'), sR = $('r-slider'), sQ = $('q-slider'),
+          sT = $('t-slider'), sF = $('fstar-slider');
+    const vS = $('s-val'),    vR = $('r-val'),    vQ = $('q-val'),
+          vT = $('t-val'),    vF = $('fstar-val');
+    const mF = $('m-F'), mMis = $('m-mis'), mArb = $('m-arb'), mPV = $('m-pv');
+    const canvas = $('fwd-canvas'), ctx = canvas.getContext('2d');
+
+    function fmt(x, dp) { return x.toFixed(dp == null ? 2 : dp); }
+
+    function draw() {
+        const S = +sS.value, r = +sR.value / 100, q = +sQ.value / 100,
+              T = +sT.value, Fstar = +sF.value;
+        const F = S * Math.exp((r - q) * T);
+        const mis = Fstar - F;
+        const pv = mis * Math.exp(-r * T);
+
+        vS.textContent = fmt(S);
+        vR.textContent = fmt(+sR.value) + '%';
+        vQ.textContent = fmt(+sQ.value) + '%';
+        vT.textContent = fmt(T);
+        vF.textContent = fmt(Fstar);
+        mF.textContent = fmt(F);
+        mMis.textContent = (mis >= 0 ? '+' : '') + fmt(mis);
+        mArb.textContent = fmt(Math.abs(mis));
+        mPV.textContent = fmt(Math.abs(pv));
+
+        // Plot value as a function of S_T  (payoffs of the two legs and the net)
+        const W = canvas.width, H = canvas.height;
+        ctx.clearRect(0, 0, W, H);
+
+        // Axes
+        const padL = 60, padR = 20, padT = 20, padB = 50;
+        const plotW = W - padL - padR, plotH = H - padT - padB;
+
+        const Smin = 0, Smax = Math.max(2 * S, 1.5 * F, 1.5 * Fstar);
+        const yMax = Math.max(Smax - Math.min(F, Fstar), Math.abs(mis) + 5);
+        const yMin = -yMax * 0.5;
+
+        const x2px = s => padL + (s - Smin) / (Smax - Smin) * plotW;
+        const y2px = y => padT + plotH - (y - yMin) / (yMax - yMin) * plotH;
+
+        // Grid
+        ctx.strokeStyle = '#21262d';
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= 5; i++) {
+            const x = padL + i / 5 * plotW;
+            ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, padT + plotH); ctx.stroke();
+        }
+        for (let i = 0; i <= 4; i++) {
+            const y = padT + i / 4 * plotH;
+            ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + plotW, y); ctx.stroke();
+        }
+
+        // x-axis at y=0
+        const y0 = y2px(0);
+        ctx.strokeStyle = '#3a4252';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(padL, y0); ctx.lineTo(padL + plotW, y0); ctx.stroke();
+
+        // Spot-bought leg (strategy A): payoff S_T - S0 e^{rT} at T
+        ctx.strokeStyle = '#34d399';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        const A0 = -S * Math.exp(r * T);
+        ctx.moveTo(x2px(Smin), y2px(Smin + A0));
+        ctx.lineTo(x2px(Smax), y2px(Smax + A0));
+        ctx.stroke();
+
+        // Forward leg (strategy B): payoff S_T - Fstar
+        ctx.strokeStyle = '#a78bfa';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(x2px(Smin), y2px(Smin - Fstar));
+        ctx.lineTo(x2px(Smax), y2px(Smax - Fstar));
+        ctx.stroke();
+
+        // Net (long A, short B if F* > F else opposite): always a horizontal line = Fstar - S0 e^{rT}
+        // Here we use a no-yield comparator for simplicity in the chart; full formula uses (r-q)
+        const net = Fstar - F;
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(x2px(Smin), y2px(net));
+        ctx.lineTo(x2px(Smax), y2px(net));
+        ctx.stroke();
+
+        // Mark F and F*
+        const markS = [
+            { v: F, color: '#fbbf24', label: 'F=' + fmt(F) },
+            { v: Fstar, color: '#f472b6', label: 'F*=' + fmt(Fstar) }
+        ];
+        markS.forEach(m => {
+            ctx.strokeStyle = m.color;
+            ctx.setLineDash([4, 4]);
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.moveTo(x2px(m.v), padT);
+            ctx.lineTo(x2px(m.v), padT + plotH);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = m.color;
+            ctx.font = '11px JetBrains Mono';
+            ctx.fillText(m.label, x2px(m.v) + 4, padT + 12);
+        });
+
+        // Labels
+        ctx.fillStyle = '#8b949e';
+        ctx.font = '12px JetBrains Mono';
+        ctx.fillText('S_T (asset at maturity)', padL + plotW / 2 - 60, H - 12);
+        ctx.save();
+        ctx.translate(16, padT + plotH / 2 + 50);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText('payoff at T', 0, 0);
+        ctx.restore();
+
+        ctx.fillStyle = '#34d399'; ctx.fillText('— spot leg', padL + 8, padT + 14);
+        ctx.fillStyle = '#a78bfa'; ctx.fillText('— forward leg', padL + 8, padT + 30);
+        ctx.fillStyle = '#fbbf24'; ctx.fillText('— net (arb)', padL + 8, padT + 46);
+    }
+
+    [sS, sR, sQ, sT, sF].forEach(el => el.addEventListener('input', draw));
+    draw();
+})();
+</script>
+</body>
+</html>
